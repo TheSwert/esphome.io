@@ -48,8 +48,11 @@ media_source:
 ```
 
 The PEM file is baked into the firmware, so re-flash (e.g. OTA update) after rotating the
-CA certificate. When `http_request` is configured with its own `ca_certificate_path`, media
-sources inherit it automatically, so a single declaration covers both components:
+CA certificate. When `http_request` is configured with its own `ca_certificate_path` and `verify_ssl` is
+enabled (the default), media sources inherit it automatically, so a single declaration covers
+both components. The inheritance is skipped when `http_request` sets `verify_ssl: false`,
+mirroring `http_request`'s own handling of its CA; a validation-time `INFO` log names every
+media source that inherits the CA.
 
 ```yaml
 http_request:
@@ -60,8 +63,9 @@ media_source:
 ```
 
 `verify_ssl: false` under `http_request` remains available for trusted networks, but it
-disables certificate verification globally for all TLS connections in the build; preferring
-`ca_certificate_path` keeps verification on with your own trust anchor.
+disables certificate verification globally for all TLS connections in the build, and it also
+disables the CA inheritance described above; preferring `ca_certificate_path` keeps
+verification on with your own trust anchor.
 
 <span id="config-audio_http_media_source"></span>
 
@@ -83,7 +87,7 @@ disables certificate verification globally for all TLS connections in the build;
   certificate store for this media source. Relative paths are resolved against the
   configuration directory. If omitted, the value from the
   [`http_request`](/components/http_request/) component's `ca_certificate_path` is used when
-  that component is configured.
+  that component is configured and `verify_ssl` is enabled (the default).
 - **task_stack_in_psram** (*Optional*, boolean): If `true`, the FreeRTOS decode task stack is
   allocated in PSRAM instead of internal RAM. Requires the [psram](/components/psram/) component. Defaults to `false`.
 - All other options from [Media Source](/components/media_source/).
